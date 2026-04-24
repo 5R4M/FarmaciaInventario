@@ -1,0 +1,118 @@
+@model IEnumerable<FarmaciaInventario.Models.Product>
+
+@{
+    ViewData["Title"] = "Inventario de Farmacia";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold"><i class="bi bi-box-seam me-2 text-primary"></i>Listado de Insumos</h2>
+    <div class="d-flex gap-2">
+        <div class="input-group shadow-sm" style="width: 300px;">
+            <span class="input-group-text">
+                <i class="bi bi-barcode"></i>
+            </span>
+            <input type="text" id="barcodeScannerInput" class="form-control" placeholder="Escanea o busca SKU..." autofocus>
+        </div>
+        <a asp-action="Create" class="btn btn-primary shadow-sm">
+            <i class="bi bi-plus-circle me-1"></i> Nuevo Producto
+        </a>
+    </div>
+</div>
+
+<div class="glass-card">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead>
+                <tr>
+                    <th>Producto</th>
+                    <th>Categoría</th>
+                    <th>SKU</th>
+                    <th>Precio</th>
+                    <th>Stock</th>
+                    <th>Vencimiento</th>
+                    <th class="text-end">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model) {
+                    <tr>
+                        <td>
+                            <div class="fw-semibold">@item.Name</div>
+                            <small style="color: #94a3b8;">@item.Description</small>
+                        </td>
+                        <td>
+                            <span class="badge bg-secondary bg-opacity-25 fw-normal">@item.Category?.Name</span>
+                        </td>
+                        <td class="font-monospace small">@item.SKU</td>
+                        <td>Q @item.Price.ToString("F2")</td>
+                        <td>
+                            @{
+                                var statusClass = item.StockQuantity > 20 ? "status-in-stock" : (item.StockQuantity > 0 ? "status-low-stock" : "status-out-stock");
+                                var statusText = item.StockQuantity > 20 ? "En Stock" : (item.StockQuantity > 0 ? "Bajo Stock" : "Agotado");
+                            }
+                            <span class="status-badge @statusClass">@item.StockQuantity @statusText</span>
+                        </td>
+                        <td>
+                            @if (item.ExpirationDate.HasValue) {
+                                <span class="@(item.ExpirationDate < DateTime.Now.AddMonths(3) ? "text-danger" : "")">
+                                    @item.ExpirationDate.Value.ToString("dd/MM/yyyy")
+                                </span>
+                            } else {
+                                <span style="color: #64748b;">-</span>
+                            }
+                        </td>
+                        <td class="text-end">
+                            <div class="btn-group">
+                                <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-light border-opacity-25" title="Editar">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-outline-danger border-opacity-25" title="Eliminar">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+@section Scripts {
+    <script>
+        // Soporte para Lector de Código de Barras (ZKTeco ZKB101)
+        const scannerInput = document.getElementById('barcodeScannerInput');
+
+        // Mantener el foco en el input para el lector
+        document.addEventListener('keydown', (e) => {
+            // Si el usuario empieza a escribir y no está en un input, enfocar el buscador
+            if (document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
+                scannerInput.focus();
+            }
+        });
+
+        // Filtrado en tiempo real mientras se escanea/escribe
+        scannerInput.addEventListener('input', function() {
+            const filter = this.value.toUpperCase();
+            const rows = document.querySelectorAll('tbody tr');
+
+            rows.forEach(row => {
+                const text = row.innerText.toUpperCase();
+                row.style.display = text.includes(filter) ? '' : 'none';
+            });
+        });
+
+        // Al presionar Enter (que el lector envía automáticamente)
+        scannerInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                console.log('Barcode Scanned:', this.value);
+                // Aquí podrías redirigir automáticamente si hay un match exacto
+                const rows = document.querySelectorAll('tbody tr:not([style*="display: none"])');
+                if (rows.length === 1) {
+                    // Si solo queda uno, podríamos abrir sus detalles o edición
+                    // const id = rows[0].getAttribute('data-id'); 
+                }
+            }
+        });
+    </script>
+}

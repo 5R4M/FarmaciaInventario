@@ -1,0 +1,230 @@
+:root {
+    --bg-color: #0f172a;
+    --card-bg: rgba(30, 41, 59, 0.7);
+    --accent-primary: #10b981;
+    --accent-secondary: #3b82f6;
+    --text-main: #f8fafc;
+    --text-muted: #94a3b8;
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --text-color: #f8fafc;
+    --label-color: #94a3b8;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-main);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    margin: 0;
+    min-height: 100vh;
+}
+
+.glass-card {
+    background: var(--card-bg);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    transition: transform 0.3s ease;
+}
+
+.glass-card:hover {
+    transform: translateY(-5px);
+}
+
+.navbar {
+    background: rgba(15, 23, 42, 0.8) !important;
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--glass-border);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary)) !important;
+    border: none !important;
+    border-radius: 0.5rem !important;
+    padding: 0.6rem 1.2rem !important;
+    font-weight: 600 !important;
+}
+
+.btn-primary:hover {
+    filter: brightness(1.1);
+}
+
+.table {
+    color: var(--text-main) !important;
+}
+
+.table thead th {
+    border-bottom: 2px solid var(--glass-border) !important;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+}
+
+.table td {
+    border-bottom: 1px solid var(--glass-border) !important;
+    vertical-align: middle;
+}
+
+.status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.status-in-stock { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+.status-low-stock { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
+.status-out-stock { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+
+/* Custom scrollbar */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: var(--bg-color); }
+::-webkit-scrollbar-thumb { background: var(--card-bg); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+/* Form controls */
+.form-control, .form-select {
+    background-color: #1e293b !important;
+    color: #f8fafc !important;
+    border-color: #475569 !important;
+}
+
+.form-control:focus, .form-select:focus {
+    background-color: #1e293b !important;
+    color: #f8fafc !important;
+    border-color: #3b82f6 !important;
+    box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.25) !important;
+}
+
+.form-label {
+    color: #94a3b8 !important;
+    font-weight: 600;
+    font-size: 0.75rem;
+}
+
+.input-group-text {
+    background-color: #1e293b !important;
+    border-color: #475569 !important;
+    color: #94a3b8 !important;
+}
+
+.form-check-label {
+    color: #94a3b8 !important;
+}
+
+/* Bootstrap icons */
+.bi {
+    font-family: 'bootstrap-icons' !important;
+}
+
+/* Table improvements */
+.table {
+    --bs-table-bg: transparent;
+    --bs-table-color: #f8fafc;
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(30, 41, 59, 0.5) !important;
+}
+
+/* Navbar text */
+.navbar-brand, .nav-link {
+    color: #f8fafc !important;
+}
+
+.nav-link:hover {
+    color: #3b82f6 !important;
+}
+
+.text-muted {
+    color: #94a3b8 !important;
+}
+
+/* Card text */
+.card-title, .card-text {
+    color: #f8fafc;
+}
+
+.card-body {
+    background-color: rgba(30, 41, 59, 0.7);
+}
+
+/* Alert improvements */
+.alert-success {
+    background-color: rgba(16, 185, 129, 0.2);
+    border-color: #10b981;
+    color: #10b981;
+}
+
+.alert-danger {
+    background-color: rgba(239, 68, 68, 0.2);
+    border-color: #ef4444;
+    color: #ef4444;
+}
+
+.alert-warning {
+    background-color: rgba(245, 158, 11, 0.2);
+    border-color: #f59e0b;
+    color: #f59e0b;
+}
+
+/* Badge improvements */
+.badge {
+    color: #f8fafc;
+}
+
+/* Dropdown improvements */
+.dropdown-item-text {
+    color: #94a3b8 !important;
+}
+
+.dropdown-menu {
+    background-color: #1e293b !important;
+}
+
+.dropdown-item {
+    color: #f8fafc !important;
+}
+
+.dropdown-item:hover {
+    background-color: #334155 !important;
+    color: #f8fafc !important;
+}
+
+/* Footer and small text */
+.small, small, .text-small {
+    color: #94a3b8 !important;
+}
+
+/* Icon colors */
+.text-primary {
+    color: #3b82f6 !important;
+}
+
+.text-success, .text-emerald, .text-teal {
+    color: #10b981 !important;
+}
+
+.text-warning {
+    color: #f59e0b !important;
+}
+
+.text-danger {
+    color: #ef4444 !important;
+}
+
+.text-info {
+    color: #3b82f6 !important;
+}
+
+/* h1-h6 headings */
+h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
+    color: #f8fafc !important;
+}
+
+/* Paragraphs */
+p {
+    color: #f8fafc;
+}

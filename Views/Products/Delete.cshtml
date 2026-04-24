@@ -1,0 +1,41 @@
+@model FarmaciaInventario.Models.Product
+
+@{
+    ViewData["Title"] = "Eliminar Producto";
+}
+
+<div class="mb-4">
+    <h2 class="fw-bold"><i class="bi bi-trash me-2 text-danger"></i>Eliminar Producto</h2>
+    <p class="small" style="color: #94a3b8;">¿Estás seguro de que deseas eliminar este producto?</p>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="glass-card border-danger border-opacity-25">
+            <dl class="row mb-0">
+                <dt class="col-sm-4 small fw-bold">NOMBRE</dt>
+                <dd class="col-sm-8">@Model.Name</dd>
+
+                <dt class="col-sm-4 small fw-bold">SKU</dt>
+                <dd class="col-sm-8">@Model.SKU</dd>
+
+                <dt class="col-sm-4 small fw-bold">CATEGORÍA</dt>
+                <dd class="col-sm-8">@Model.Category?.Name</dd>
+
+                <dt class="col-sm-4 small fw-bold">PRECIO</dt>
+                <dd class="col-sm-8">Q @Model.Price.ToString("F2")</dd>
+
+                <dt class="col-sm-4 small fw-bold">STOCK</dt>
+                <dd class="col-sm-8">@Model.StockQuantity unidades</dd>
+            </dl>
+        </div>
+
+        <form asp-action="Delete" class="mt-3 d-flex gap-2">
+            <input type="hidden" asp-for="Id" />
+            <button type="submit" class="btn btn-danger px-4">
+                <i class="bi bi-trash me-1"></i> Eliminar
+            </button>
+            <a asp-action="Index" class="btn btn-outline-light border-opacity-25">Cancelar</a>
+        </form>
+    </div>
+</div>

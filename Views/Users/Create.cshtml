@@ -1,0 +1,45 @@
+@{
+    ViewData["Title"] = "Nuevo Usuario";
+}
+
+<div class="mb-4">
+    <h2 class="fw-bold"><i class="bi bi-person-plus me-2 text-primary"></i>Nuevo Usuario</h2>
+    <p class="small" style="color: #94a3b8;">Crea una cuenta de acceso al sistema.</p>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="glass-card">
+            <form asp-action="Create" method="post">
+                <div asp-validation-summary="All" class="text-danger mb-3"></div>
+
+                <div class="row g-3">
+                    <div class="col-md-12">
+                        <label class="form-label small fw-bold">CORREO ELECTRÓNICO</label>
+                        <input type="email" name="email" class="form-control" placeholder="usuario@farmacia.com" autofocus required />
+                    </div>
+
+                    <div class="col-md-12">
+                        <label class="form-label small fw-bold">CONTRASEÑA</label>
+                        <input type="password" name="password" class="form-control" placeholder="Mínimo 6 caracteres" required />
+                    </div>
+
+                    <div class="col-md-12">
+                        <label class="form-label small fw-bold">ROL</label>
+                        <select name="role" class="form-select" required>
+                            <option value="Cajero">Cajero</option>
+                            <option value="Admin">Administrador</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="mt-4 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary px-4">
+                        <i class="bi bi-person-check me-1"></i> Crear Usuario
+                    </button>
+                    <a asp-action="Index" class="btn btn-outline-light border-opacity-25">Cancelar</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

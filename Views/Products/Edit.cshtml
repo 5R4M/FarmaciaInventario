@@ -1,0 +1,83 @@
+@model FarmaciaInventario.Models.Product
+
+@{
+    ViewData["Title"] = "Editar Producto";
+}
+
+<div class="mb-4">
+    <h2 class="fw-bold"><i class="bi bi-pencil-square me-2 text-primary"></i>Editar Insumo</h2>
+    <p class="small" style="color: #94a3b8;">Modifica los datos del producto.</p>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="glass-card">
+            <form asp-action="Edit">
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                <input type="hidden" asp-for="Id" />
+
+                <div class="row g-3">
+                    <div class="col-md-12">
+                        <label asp-for="SKU" class="form-label small fw-bold">CÓDIGO DE BARRAS (SKU)</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="bi bi-barcode text-primary"></i>
+                            </span>
+                            <input asp-for="SKU" class="form-control" />
+                        </div>
+                        <span asp-validation-for="SKU" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-12">
+                        <label asp-for="Name" class="form-label small fw-bold">NOMBRE DEL PRODUCTO</label>
+                        <input asp-for="Name" class="form-control" />
+                        <span asp-validation-for="Name" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-12">
+                        <label asp-for="Description" class="form-label small fw-bold">DESCRIPCIÓN</label>
+                        <textarea asp-for="Description" class="form-control" rows="2"></textarea>
+                        <span asp-validation-for="Description" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="CategoryId" class="form-label small fw-bold">CATEGORÍA</label>
+                        <select asp-for="CategoryId" class="form-select" asp-items="ViewBag.CategoryId"></select>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="Price" class="form-label small fw-bold">PRECIO DE VENTA</label>
+                        <div class="input-group">
+                            <span class="input-group-text">Q</span>
+                            <input asp-for="Price" class="form-control" />
+                        </div>
+                        <span asp-validation-for="Price" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="StockQuantity" class="form-label small fw-bold">CANTIDAD EN STOCK</label>
+                        <input asp-for="StockQuantity" class="form-control" />
+                        <span asp-validation-for="StockQuantity" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="ExpirationDate" class="form-label small fw-bold">FECHA DE VENCIMIENTO</label>
+                        <input asp-for="ExpirationDate" class="form-control" type="date" />
+                        <span asp-validation-for="ExpirationDate" class="text-danger small"></span>
+                    </div>
+                </div>
+
+                <div class="mt-4 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary px-4">
+                        <i class="bi bi-save me-1"></i> Guardar Cambios
+                    </button>
+                    <a asp-action="Index" class="btn btn-outline-light border-opacity-25">Cancelar</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

@@ -1,0 +1,204 @@
+@{
+    ViewData["Title"] = "Facturación";
+}
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="fw-bold"><i class="bi bi-receipt me-2 text-primary"></i>Nueva Venta</h2>
+            <div class="input-group" style="width: 350px;">
+                <span class="input-group-text">
+                    <i class="bi bi-barcode text-primary"></i>
+                </span>
+                <input type="text" id="barcodeInput" class="form-control" placeholder="Escanea código de barras..." autofocus>
+            </div>
+        </div>
+
+        <div class="glass-card">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle" id="salesTable">
+                    <thead>
+                        <tr>
+                            <th>Producto</th>
+                            <th class="text-center" style="width: 100px;">Cant.</th>
+                            <th class="text-end">Precio</th>
+                            <th class="text-end">Subtotal</th>
+                            <th class="text-end"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Items added via JS -->
+                    </tbody>
+                </table>
+            </div>
+            <div id="emptyMessage" class="text-center py-5">
+                <i class="bi bi-cart-plus display-1 opacity-25"></i>
+                <p class="mt-3" style="color: #94a3b8;">Escanea productos para comenzar la venta</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="glass-card sticky-top" style="top: 20px;">
+            <h4 class="fw-bold mb-4">Resumen</h4>
+            
+            <div class="mb-4">
+                <label class="form-label small fw-bold">CLIENTE</label>
+                <input type="text" id="customerName" class="form-control" value="Consumidor Final">
+            </div>
+
+            <div class="d-flex justify-content-between mb-2">
+                <span style="color: #94a3b8;">Subtotal</span>
+                <span id="summarySubtotal">Q0.00</span>
+            </div>
+            <div class="d-flex justify-content-between mb-4">
+                <span style="color: #94a3b8;">Impuestos (0%)</span>
+                <span>Q0.00</span>
+            </div>
+            
+            <hr class="border-secondary border-opacity-25">
+            
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4 class="fw-bold mb-0">TOTAL</h4>
+                <h2 class="fw-bold text-primary mb-0" id="summaryTotal">Q0.00</h2>
+            </div>
+
+            <button id="btnCompleteSale" class="btn btn-primary btn-lg w-100 shadow py-3 fw-bold" disabled>
+                <i class="bi bi-check2-circle me-2"></i> COMPLETAR VENTA
+            </button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let cart = [];
+        const barcodeInput = document.getElementById('barcodeInput');
+        const salesTableBody = document.querySelector('#salesTable tbody');
+        const emptyMessage = document.getElementById('emptyMessage');
+        const btnCompleteSale = document.getElementById('btnCompleteSale');
+
+        barcodeInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                const sku = this.value;
+                if (sku) fetchProduct(sku);
+                this.value = '';
+            }
+        });
+
+        async function fetchProduct(sku) {
+            try {
+                const response = await fetch(`/Sales/SearchProduct?sku=${sku}`);
+                if (response.ok) {
+                    const product = await response.json();
+                    addToCart(product);
+                } else {
+                    alert('Producto no encontrado');
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        function addToCart(product) {
+            const existingItem = cart.find(i => i.id === product.id);
+            if (existingItem) {
+                existingItem.quantity++;
+            } else {
+                cart.push({
+                    id: product.id,
+                    name: product.name,
+                    price: product.price,
+                    quantity: 1
+                });
+            }
+            renderCart();
+        }
+
+        function removeFromCart(id) {
+            cart = cart.filter(i => i.id !== id);
+            renderCart();
+        }
+
+        function renderCart() {
+            salesTableBody.innerHTML = '';
+            let total = 0;
+
+            if (cart.length === 0) {
+                emptyMessage.classList.remove('d-none');
+                btnCompleteSale.disabled = true;
+            } else {
+                emptyMessage.classList.add('d-none');
+                btnCompleteSale.disabled = false;
+
+                cart.forEach(item => {
+                    const subtotal = item.price * item.quantity;
+                    total += subtotal;
+                    
+                    const row = `
+                        <tr>
+                            <td>
+                                <div class="fw-bold">${item.name}</div>
+                            </td>
+                            <td class="text-center">
+                                <input type="number" class="form-control form-control-sm text-center" 
+                                    value="${item.quantity}" min="1" onchange="updateQuantity(${item.id}, this.value)">
+                            </td>
+                            <td class="text-end">Q ${item.price.toFixed(2)}</td>
+                            <td class="text-end fw-bold">Q ${subtotal.toFixed(2)}</td>
+                            <td class="text-end">
+                                <button class="btn btn-sm btn-outline-danger border-0" onclick="removeFromCart(${item.id})">
+                                    <i class="bi bi-x-lg"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                    salesTableBody.insertAdjacentHTML('beforeend', row);
+                });
+            }
+
+            document.getElementById('summarySubtotal').innerText = `Q ${total.toFixed(2)}`;
+            document.getElementById('summaryTotal').innerText = `Q ${total.toFixed(2)}`;
+        }
+
+        function updateQuantity(id, qty) {
+            const item = cart.find(i => i.id === id);
+            if (item) {
+                item.quantity = parseInt(qty);
+                renderCart();
+            }
+        }
+
+        btnCompleteSale.addEventListener('click', async function() {
+            const customerName = document.getElementById('customerName').value;
+            const data = {
+                CustomerName: customerName,
+                Items: cart.map(i => ({ ProductId: i.id, Quantity: i.quantity, Price: i.price }))
+            };
+
+            try {
+                const response = await fetch('/Sales/CreateSale', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    // Open receipt in new window for printing
+                    window.open(`/Sales/Receipt/${result.saleId}`, '_blank', 'width=400,height=600');
+                    // Reset cart
+                    cart = [];
+                    renderCart();
+                    barcodeInput.focus();
+                } else {
+                    const error = await response.text();
+                    alert('Error: ' + error);
+                }
+            } catch (err) {
+                alert('Error al procesar la venta');
+            }
+        });
+    </script>
+}

@@ -1,0 +1,103 @@
+@model FarmaciaInventario.Models.Sale
+
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Recibo #@Model.Id</title>
+    <style>
+        * {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 12px;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            width: 58mm;
+            padding: 2mm;
+        }
+
+        .center { text-align: center; }
+        .bold { font-weight: bold; }
+        .border-top { border-top: 1px dashed #000; margin-top: 5px; padding-top: 5px; }
+        
+        .header { margin-bottom: 10px; }
+        .header h2 { font-size: 16px; }
+        
+        .details { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        .details th { text-align: left; border-bottom: 1px dashed #000; }
+        
+        .total-section { margin-top: 10px; text-align: right; }
+        
+        .footer { margin-top: 15px; font-size: 10px; }
+
+        @@media print {
+            .no-print { display: none; }
+            body { width: 58mm; }
+        }
+    </style>
+</head>
+<body>
+    <div class="no-print" style="background: #f0f0f0; padding: 10px; text-align: center; margin-bottom: 20px;">
+        <button onclick="window.print()" style="padding: 10px 20px; cursor: pointer; background: #10b981; color: white; border: none; border-radius: 5px;">
+            IMPRIMIR EN XPRINTER
+        </button>
+        <button onclick="window.close()" style="padding: 10px 20px; cursor: pointer; background: #666; color: white; border: none; border-radius: 5px; margin-left: 10px;">
+            CERRAR
+        </button>
+    </div>
+
+    <div class="header center">
+        <h2 class="bold">FARMACIA CORE</h2>
+        <p>Calle Principal #123</p>
+        <p>Tel: 2222-3333</p>
+        <p class="border-top">RECIBO DE VENTA</p>
+    </div>
+
+    <div class="info">
+        <p>Ticket: #@Model.Id.ToString("D5")</p>
+        <p>Fecha: @Model.SaleDate.ToString("dd/MM/yyyy HH:mm")</p>
+        <p>Cliente: @Model.CustomerName</p>
+    </div>
+
+    <table class="details">
+        <thead>
+            <tr>
+                <th style="width: 60%;">Item</th>
+                <th style="width: 15%;">Cant</th>
+                <th style="width: 25%;">Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.SaleDetails)
+            {
+                <tr>
+                    <td>@item.Product?.Name</td>
+                    <td class="center">@item.Quantity</td>
+                    <td style="text-align: right;">Q @item.Subtotal.ToString("F2")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <div class="total-section border-top">
+        <p class="bold" style="font-size: 14px;">TOTAL: Q @Model.TotalAmount.ToString("F2")</p>
+    </div>
+
+    <div class="footer center border-top">
+        <p>¡Gracias por su compra!</p>
+        <p>Vuelva pronto</p>
+        <p>@DateTime.Now.ToString("yyyy") - PharmaCore</p>
+    </div>
+
+    <script>
+        // Auto-print option (optional)
+        // window.onload = function() { window.print(); }
+    </script>
+</body>
+</html>

@@ -1,0 +1,54 @@
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<div class="row mb-5">
+    <div class="col-lg-8">
+        <h1 class="display-5 fw-bold mb-3">Gestión de <span class="text-primary">Inventario</span></h1>
+        <p class="lead" style="color: #94a3b8;">Sistema centralizado para el control de insumos médicos, medicamentos y suministros de farmacia.</p>
+        <div class="mt-4">
+            <a asp-controller="Products" asp-action="Index" class="btn btn-primary btn-lg me-3 px-4 shadow">
+                <i class="bi bi-search me-2"></i>Ver Inventario
+            </a>
+            <a asp-controller="Categories" asp-action="Index" class="btn btn-outline-light btn-lg px-4 border-opacity-25">
+                Configurar Tipos
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-5">
+    <div class="col-md-4">
+        <div class="glass-card text-center py-5">
+            <div class="display-6 mb-2 text-primary"><i class="bi bi-capsule"></i></div>
+            <h4 class="fw-bold">Medicamentos</h4>
+            <p class="small" style="color: #94a3b8;">Analgésicos, Antibióticos, etc.</p>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="glass-card text-center py-5">
+            <div class="display-6 mb-2 text-emerald"><i class="bi bi-hospital"></i></div>
+            <h4 class="fw-bold">Mat. Quirúrgico</h4>
+            <p class="small" style="color: #94a3b8;">Sondas, Catéteres, Venoclisis.</p>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="glass-card text-center py-5">
+            <div class="display-6 mb-2 text-warning"><i class="bi bi-cup-straw"></i></div>
+            <h4 class="fw-bold">Otros Insumos</h4>
+            <p class="small" style="color: #94a3b8;">Bebidas, Golosinas, Helados.</p>
+        </div>
+    </div>
+</div>
+
+<div class="glass-card p-4">
+    <div class="row align-items-center">
+        <div class="col-md-2 text-center text-primary display-4">
+            <i class="bi bi-shield-check"></i>
+        </div>
+        <div class="col-md-10">
+            <h5 class="fw-bold mb-1">Estado del Sistema</h5>
+            <p class="mb-0 small" style="color: #94a3b8;">Conectado a SQL Server Express. Base de datos actualizada y optimizada.</p>
+        </div>
+    </div>
+</div>

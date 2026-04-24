@@ -1,0 +1,31 @@
+# Build outputs
+bin/
+obj/
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# NuGet
+*.nupkg
+packages/
+project.lock.json
+
+# User-specific files
+*.rsuser
+
+# ASP.NET
+wwwroot/lib/
+
+# Rider
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Claude Code
+.claude/settings.local.json

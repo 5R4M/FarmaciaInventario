@@ -1,0 +1,85 @@
+@model IEnumerable<FarmaciaInventario.Models.Sale>
+
+@{
+    ViewData["Title"] = "Reporte de Ventas";
+}
+
+<div class="mb-4">
+    <h2 class="fw-bold"><i class="bi bi-graph-up me-2 text-primary"></i>Reporte de Ventas por Turno</h2>
+</div>
+
+<div class="glass-card mb-4">
+    <form method="get" class="row g-3 align-items-end">
+        <div class="col-md-4">
+            <label class="form-label small fw-bold">FECHA</label>
+            <input type="date" name="date" class="form-control" value="@ViewBag.Date">
+        </div>
+        <div class="col-md-4">
+            <label class="form-label small fw-bold">TURNO</label>
+            <select name="shift" class="form-select">
+                <option value="">Todos los turnos</option>
+                <option value="Mañana" selected="@(ViewBag.Shift == "Mañana")">Mañana (06:00 - 14:00)</option>
+                <option value="Tarde" selected="@(ViewBag.Shift == "Tarde")">Tarde (14:00 - 22:00)</option>
+                <option value="Noche" selected="@(ViewBag.Shift == "Noche")">Noche (22:00 - 06:00)</option>
+            </select>
+        </div>
+        <div class="col-md-4">
+            <button type="submit" class="btn btn-primary w-100">
+                <i class="bi bi-filter me-1"></i> Generar Reporte
+            </button>
+        </div>
+    </form>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <div class="glass-card text-center py-4 border-primary border-opacity-25">
+            <div class="text-muted small fw-bold mb-1">TOTAL VENTAS</div>
+            <h2 class="fw-bold text-primary mb-0">Q @Model.Sum(s => s.TotalAmount).ToString("F2")</h2>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="glass-card text-center py-4">
+            <div class="text-primary small fw-bold mb-1">CANT. TICKETS</div>
+            <h2 class="fw-bold mb-0">@Model.Count()</h2>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="glass-card text-center py-4">
+            <div class="small fw-bold mb-1">PROMEDIO VENTA</div>
+            <h2 class="fw-bold mb-0">Q @(Model.Any() ? Model.Average(s => s.TotalAmount).ToString("F2") : "0.00")</h2>
+        </div>
+    </div>
+</div>
+
+<div class="glass-card">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead>
+                <tr>
+                    <th>Ticket #</th>
+                    <th>Hora</th>
+                    <th>Cliente</th>
+                    <th class="text-end">Monto</th>
+                    <th class="text-end">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var sale in Model)
+                {
+                    <tr>
+                        <td class="fw-bold text-primary">#@sale.Id.ToString("D5")</td>
+                        <td>@sale.SaleDate.ToString("HH:mm")</td>
+                        <td>@sale.CustomerName</td>
+                        <td class="text-end fw-bold">Q @sale.TotalAmount.ToString("F2")</td>
+                        <td class="text-end">
+                            <a asp-action="Receipt" asp-route-id="@sale.Id" target="_blank" class="btn btn-sm btn-outline-light border-opacity-25">
+                                <i class="bi bi-printer"></i>
+                            </a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

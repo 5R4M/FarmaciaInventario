@@ -1,0 +1,45 @@
+@model FarmaciaInventario.Models.Category
+
+@{
+    ViewData["Title"] = "Nueva Categoría";
+}
+
+<div class="mb-4">
+    <h2 class="fw-bold"><i class="bi bi-plus-circle me-2 text-primary"></i>Nueva Categoría</h2>
+    <p class="small" style="color: #94a3b8;">Crea una nueva categoría para organizar los insumos.</p>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="glass-card">
+            <form asp-action="Create">
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                <div class="row g-3">
+                    <div class="col-md-12">
+                        <label asp-for="Name" class="form-label small fw-bold">NOMBRE</label>
+                        <input asp-for="Name" class="form-control" placeholder="Ej: Analgésicos" autofocus />
+                        <span asp-validation-for="Name" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-12">
+                        <label asp-for="Description" class="form-label small fw-bold">DESCRIPCIÓN</label>
+                        <textarea asp-for="Description" class="form-control" rows="3" placeholder="Descripción opcional..."></textarea>
+                        <span asp-validation-for="Description" class="text-danger small"></span>
+                    </div>
+                </div>
+
+                <div class="mt-4 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary px-4">
+                        <i class="bi bi-save me-1"></i> Guardar
+                    </button>
+                    <a asp-action="Index" class="btn btn-outline-light border-opacity-25">Cancelar</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
