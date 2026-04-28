@@ -36,6 +36,8 @@ body {
     background: rgba(15, 23, 42, 0.8) !important;
     backdrop-filter: blur(8px);
     border-bottom: 1px solid var(--glass-border);
+    position: relative;
+    z-index: 1030;
 }
 
 .btn-primary {
@@ -89,6 +91,15 @@ body {
     background-color: #1e293b !important;
     color: #f8fafc !important;
     border-color: #475569 !important;
+}
+
+.form-control::placeholder {
+    color: #64748b !important;
+    opacity: 1;
+}
+
+.no-hover:hover {
+    transform: none !important;
 }
 
 .form-control:focus, .form-select:focus {

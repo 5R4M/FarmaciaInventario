@@ -1,5 +1,9 @@
+@model IEnumerable<FarmaciaInventario.Models.Category>
 @{
     ViewData["Title"] = "Dashboard";
+    var icons  = new[] { "bi-capsule", "bi-hospital", "bi-cup-straw", "bi-box-seam", "bi-heart-pulse", "bi-bandaid", "bi-thermometer", "bi-eyeglasses" };
+    var colors = new[] { "text-primary", "text-emerald", "text-warning", "text-info", "text-danger", "text-secondary", "text-primary", "text-emerald" };
+    int idx = 0;
 }
 
 <div class="row mb-5">
@@ -18,27 +22,85 @@
 </div>
 
 <div class="row g-4 mb-5">
-    <div class="col-md-4">
-        <div class="glass-card text-center py-5">
-            <div class="display-6 mb-2 text-primary"><i class="bi bi-capsule"></i></div>
-            <h4 class="fw-bold">Medicamentos</h4>
-            <p class="small" style="color: #94a3b8;">Analgésicos, Antibióticos, etc.</p>
+    @if (!Model.Any())
+    {
+        <div class="col-12">
+            <div class="glass-card text-center py-5">
+                <i class="bi bi-tags display-4 opacity-25 mb-3"></i>
+                <p style="color:#94a3b8;">No hay categorías registradas aún.</p>
+                <a asp-controller="Categories" asp-action="Create" class="btn btn-primary">Crear categoría</a>
+            </div>
         </div>
-    </div>
-    <div class="col-md-4">
-        <div class="glass-card text-center py-5">
-            <div class="display-6 mb-2 text-emerald"><i class="bi bi-hospital"></i></div>
-            <h4 class="fw-bold">Mat. Quirúrgico</h4>
-            <p class="small" style="color: #94a3b8;">Sondas, Catéteres, Venoclisis.</p>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="glass-card text-center py-5">
-            <div class="display-6 mb-2 text-warning"><i class="bi bi-cup-straw"></i></div>
-            <h4 class="fw-bold">Otros Insumos</h4>
-            <p class="small" style="color: #94a3b8;">Bebidas, Golosinas, Helados.</p>
-        </div>
-    </div>
+    }
+    else
+    {
+        @foreach (var cat in Model)
+        {
+            var icon  = icons[idx % icons.Length];
+            var color = colors[idx % colors.Length];
+            var collapseId = $"cat-{cat.Id}";
+            idx++;
+            <div class="col-md-4">
+                <div class="glass-card text-center py-4"
+                     style="cursor:pointer;"
+                     data-bs-toggle="collapse"
+                     data-bs-target="#@collapseId"
+                     aria-expanded="false">
+                    <div class="display-6 mb-2 @color"><i class="bi @icon"></i></div>
+                    <h4 class="fw-bold">@cat.Name</h4>
+                    <p class="small mb-1" style="color:#94a3b8;">@(string.IsNullOrEmpty(cat.Description) ? "Sin descripción" : cat.Description)</p>
+                    <span class="badge" style="background:rgba(59,130,246,0.15);color:#3b82f6;font-size:.75rem;">
+                        @cat.Products.Count insumo(s) &bull; <i class="bi bi-chevron-down"></i>
+                    </span>
+                </div>
+
+                <div class="collapse mt-2" id="@collapseId">
+                    <div class="glass-card no-hover p-0" style="overflow:hidden;">
+                        @if (cat.Products.Any())
+                        {
+                            <div style="max-height:300px;overflow-y:auto;">
+                                <table class="table table-sm mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Insumo</th>
+                                            <th class="text-end">Precio</th>
+                                            <th class="text-end">Stock</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var p in cat.Products)
+                                        {
+                                            <tr>
+                                                <td>
+                                                    <div class="fw-bold small">@p.Name</div>
+                                                    @if (!string.IsNullOrEmpty(p.SKU))
+                                                    {
+                                                        <div style="font-size:.7rem;color:#64748b;">@p.SKU</div>
+                                                    }
+                                                </td>
+                                                <td class="text-end small">Q@p.Price.ToString("0.00")</td>
+                                                <td class="text-end">
+                                                    <span class="status-badge @(p.StockQuantity > 10 ? "status-in-stock" : p.StockQuantity > 0 ? "status-low-stock" : "status-out-stock")">
+                                                        @p.StockQuantity
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="text-center py-4" style="color:#64748b;font-size:.875rem;">
+                                <i class="bi bi-inbox me-1"></i>Sin insumos registrados
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    }
 </div>
 
 <div class="glass-card p-4">

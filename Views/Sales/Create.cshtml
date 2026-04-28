@@ -2,15 +2,94 @@
     ViewData["Title"] = "Facturación";
 }
 
+<!-- Modal de confirmación antes de procesar la venta -->
+<div class="modal fade" id="confirmModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width:400px;">
+        <div class="modal-content border-0" style="background:#1e293b;color:#f8fafc;">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold">
+                    <i class="bi bi-receipt-cutoff me-2 text-primary"></i>Confirmar venta
+                </h5>
+            </div>
+            <div class="modal-body pt-2">
+                <!-- Resumen dinámico -->
+                <div id="confirmSummary" class="mb-3"
+                     style="background:#0f172a;border-radius:.5rem;padding:.85rem 1rem;font-size:.9rem;line-height:1.9;">
+                </div>
+                <!-- Advertencia -->
+                <div class="d-flex gap-2 align-items-start p-3 rounded"
+                     style="background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.25);">
+                    <i class="bi bi-exclamation-triangle-fill mt-1" style="color:#fbbf24;flex-shrink:0;"></i>
+                    <p class="mb-0 small" style="color:#fde68a;">
+                        Una vez generado el recibo, la venta queda <strong>registrada y descontada del stock</strong>.
+                        Si el cliente no puede pagar, use <strong>Anular venta</strong> desde el recibo.
+                    </p>
+                </div>
+            </div>
+            <div class="modal-footer border-0 pt-1">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-arrow-left me-1"></i>Regresar
+                </button>
+                <button type="button" id="btnConfirmSale" class="btn btn-primary fw-bold px-4">
+                    <i class="bi bi-check2-circle me-2"></i>Confirmar y generar recibo
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal del recibo -->
+<div class="modal fade" id="receiptModal" tabindex="-1" aria-hidden="true"
+     data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" style="max-width:380px;">
+        <div class="modal-content border-0" style="background:transparent;box-shadow:none;">
+            <!-- Fila superior: Imprimir + Nueva venta -->
+            <div class="d-flex gap-2 mb-2">
+                <button class="btn btn-primary fw-bold flex-fill" onclick="printReceipt()">
+                    <i class="bi bi-printer-fill me-2"></i>Imprimir
+                </button>
+                <button id="btnNewSale" class="btn fw-bold flex-fill"
+                        style="background:rgba(16,185,129,.15);color:#10b981;border:1px solid rgba(16,185,129,.3);">
+                    <i class="bi bi-plus-circle me-1"></i>Nueva venta
+                </button>
+            </div>
+            <!-- Fila inferior: Anular venta (ancho completo) -->
+            <div class="mb-2">
+                <button id="btnDeleteSale" class="btn fw-bold w-100"
+                        style="background:rgba(239,68,68,.12);color:#ef4444;border:1px solid rgba(239,68,68,.3);">
+                    <i class="bi bi-slash-circle me-2"></i>Anular venta y restaurar stock
+                </button>
+            </div>
+            <!-- Iframe del recibo -->
+            <iframe id="receiptFrame" src="" frameborder="0" scrolling="no"
+                    style="width:100%;border-radius:10px;border:none;min-height:480px;
+                           background:#fff;display:block;">
+            </iframe>
+        </div>
+    </div>
+</div>
+
 <div class="row">
     <div class="col-md-8">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h2 class="fw-bold"><i class="bi bi-receipt me-2 text-primary"></i>Nueva Venta</h2>
-            <div class="input-group" style="width: 350px;">
-                <span class="input-group-text">
-                    <i class="bi bi-barcode text-primary"></i>
-                </span>
-                <input type="text" id="barcodeInput" class="form-control" placeholder="Escanea código de barras..." autofocus>
+            <div style="position:relative;width:360px;">
+                <div class="input-group">
+                    <span class="input-group-text">
+                        <i class="bi bi-barcode text-primary"></i>
+                    </span>
+                    <input type="text" id="barcodeInput" class="form-control"
+                           placeholder="Código o nombre del insumo..." autofocus autocomplete="off">
+                </div>
+                <small id="barcodeError" class="text-danger d-none"></small>
+                <!-- Dropdown de resultados -->
+                <div id="searchDropdown" class="d-none"
+                     style="position:absolute;top:100%;left:0;right:0;z-index:1050;
+                            background:#334155;border:1px solid rgba(255,255,255,0.2);
+                            border-radius:.5rem;max-height:260px;overflow-y:auto;
+                            box-shadow:0 10px 40px rgba(0,0,0,.8);margin-top:4px;">
+                    <div id="searchDropdownList"></div>
+                </div>
             </div>
         </div>
 
@@ -26,25 +105,36 @@
                             <th class="text-end"></th>
                         </tr>
                     </thead>
-                    <tbody>
-                        <!-- Items added via JS -->
-                    </tbody>
+                    <tbody></tbody>
                 </table>
             </div>
             <div id="emptyMessage" class="text-center py-5">
                 <i class="bi bi-cart-plus display-1 opacity-25"></i>
-                <p class="mt-3" style="color: #94a3b8;">Escanea productos para comenzar la venta</p>
+                <p class="mt-3" style="color: #94a3b8;">Escanea o busca productos para comenzar la venta</p>
             </div>
         </div>
     </div>
 
     <div class="col-md-4">
-        <div class="glass-card sticky-top" style="top: 20px;">
+        <div class="glass-card sticky-top" style="top: 20px; z-index: 999;">
             <h4 class="fw-bold mb-4">Resumen</h4>
-            
-            <div class="mb-4">
-                <label class="form-label small fw-bold">CLIENTE</label>
-                <input type="text" id="customerName" class="form-control" value="Consumidor Final">
+
+            <!-- Datos del cliente -->
+            <div class="mb-3">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <label class="form-label small fw-bold mb-0">DATOS DEL CLIENTE</label>
+                    <button class="btn btn-sm btn-outline-secondary py-0 px-2" type="button" id="btnCF"
+                            title="Llenar como Consumidor Final" style="font-size:.72rem;">
+                        C/F
+                    </button>
+                </div>
+                <input type="text" id="nitInput" class="form-control mb-1"
+                       placeholder="NIT (ej. 12345678 o CF)"
+                       autocomplete="off" maxlength="15" style="text-transform:uppercase;">
+                <input type="text" id="customerName" class="form-control mb-1"
+                       placeholder="Nombre completo">
+                <input type="text" id="customerAddress" class="form-control"
+                       placeholder="Dirección">
             </div>
 
             <div class="d-flex justify-content-between mb-2">
@@ -55,9 +145,9 @@
                 <span style="color: #94a3b8;">Impuestos (0%)</span>
                 <span>Q0.00</span>
             </div>
-            
+
             <hr class="border-secondary border-opacity-25">
-            
+
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h4 class="fw-bold mb-0">TOTAL</h4>
                 <h2 class="fw-bold text-primary mb-0" id="summaryTotal">Q0.00</h2>
@@ -73,45 +163,197 @@
 @section Scripts {
     <script>
         let cart = [];
-        const barcodeInput = document.getElementById('barcodeInput');
-        const salesTableBody = document.querySelector('#salesTable tbody');
-        const emptyMessage = document.getElementById('emptyMessage');
-        const btnCompleteSale = document.getElementById('btnCompleteSale');
+        let searchTimeout;
 
-        barcodeInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                const sku = this.value;
-                if (sku) fetchProduct(sku);
-                this.value = '';
-            }
+        const barcodeInput      = document.getElementById('barcodeInput');
+        const salesTableBody    = document.querySelector('#salesTable tbody');
+        const emptyMessage      = document.getElementById('emptyMessage');
+        const btnCompleteSale   = document.getElementById('btnCompleteSale');
+        const searchDropdown    = document.getElementById('searchDropdown');
+        const searchDropdownList = document.getElementById('searchDropdownList');
+
+        // ── Cerrar dropdown al hacer clic fuera ───────────────────────────
+        document.addEventListener('click', e => {
+            if (!barcodeInput.contains(e.target) && !searchDropdown.contains(e.target))
+                hideDropdown();
         });
 
-        async function fetchProduct(sku) {
+        // ── Búsqueda en vivo mientras escribe ────────────────────────────
+        barcodeInput.addEventListener('input', function () {
+            clearTimeout(searchTimeout);
+            const q = this.value.trim();
+            if (q.length < 2) { hideDropdown(); return; }
+            searchTimeout = setTimeout(() => doSearch(q, false), 300);
+        });
+
+        // ── Enter: agregar directo si es match único, sino muestra lista ─
+        barcodeInput.addEventListener('keypress', function (e) {
+            if (e.key !== 'Enter') return;
+            e.preventDefault();
+            clearTimeout(searchTimeout);
+            const q = this.value.trim();
+            if (!q) return;
+            this.value = '';
+            hideDropdown();
+            doSearch(q, true);
+        });
+
+        // ── Navegación con teclado dentro del dropdown ───────────────────
+        barcodeInput.addEventListener('keydown', function (e) {
+            const items = searchDropdownList.querySelectorAll('.s-item');
+            if (!items.length) return;
+            if (e.key === 'ArrowDown') { e.preventDefault(); items[0].focus(); }
+        });
+
+        searchDropdownList.addEventListener('keydown', function (e) {
+            const items = [...searchDropdownList.querySelectorAll('.s-item')];
+            const cur   = document.activeElement;
+            const i     = items.indexOf(cur);
+            if (e.key === 'ArrowDown' && i < items.length - 1) { e.preventDefault(); items[i + 1].focus(); }
+            if (e.key === 'ArrowUp')  { e.preventDefault(); i > 0 ? items[i - 1].focus() : barcodeInput.focus(); }
+            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); cur.click(); }
+            if (e.key === 'Escape')   { hideDropdown(); barcodeInput.focus(); }
+        });
+
+        // ── Búsqueda ─────────────────────────────────────────────────────
+        async function doSearch(query, directIfSingle) {
             try {
-                const response = await fetch(`/Sales/SearchProduct?sku=${sku}`);
-                if (response.ok) {
-                    const product = await response.json();
-                    addToCart(product);
+                const r = await fetch(`/Sales/SearchProduct?sku=${encodeURIComponent(query)}`);
+                if (!r.ok) {
+                    if (directIfSingle) showError('Insumo no encontrado');
+                    hideDropdown();
+                    return;
+                }
+                const data = await r.json();
+                if (data.type === 'single') {
+                    if (directIfSingle) {
+                        addToCart({ id: data.id, name: data.name, price: data.price });
+                        hideDropdown();
+                    } else {
+                        renderDropdown([{ id: data.id, name: data.name, price: data.price, stockQuantity: data.stockQuantity }]);
+                    }
                 } else {
-                    alert('Producto no encontrado');
+                    renderDropdown(data.results);
                 }
             } catch (err) {
                 console.error(err);
             }
         }
 
+        function renderDropdown(results) {
+            searchDropdownList.innerHTML = results.map(p =>
+                `<div class="s-item d-flex justify-content-between align-items-center px-3 py-2"
+                     tabindex="0"
+                     data-id="${p.id}" data-name="${escHtml(p.name)}" data-price="${p.price}"
+                     style="cursor:pointer;border-bottom:1px solid rgba(255,255,255,.07);outline:none;transition: background 0.1s ease;"
+                     onmousedown="pickItem(this.dataset.id, this.dataset.name, this.dataset.price)"
+                     onkeydown="if(event.key==='Enter')pickItem(this.dataset.id, this.dataset.name, this.dataset.price)"
+                     onmouseover="this.style.background='#475569'"
+                     onmouseout="this.style.background=''"
+                     onfocus="this.style.background='#475569'"
+                     onblur="this.style.background=''">
+                    <span class="fw-bold small" style="color:#f8fafc;">${escHtml(p.name)}</span>
+                    <span style="font-size:.72rem;color:#cbd5e1;white-space:nowrap;margin-left:.5rem;">
+                        Q${p.price.toFixed(2)} &bull; Stock: ${p.stockQuantity}
+                    </span>
+                </div>`
+            ).join('');
+            searchDropdown.classList.remove('d-none');
+        }
+
+        function pickItem(id, name, price) {
+            addToCart({ id: parseInt(id), name: name, price: parseFloat(price) });
+            barcodeInput.value = '';
+            hideDropdown();
+            barcodeInput.focus();
+        }
+
+        function hideDropdown() {
+            searchDropdown.classList.add('d-none');
+            searchDropdownList.innerHTML = '';
+        }
+
+        function showError(msg) {
+            const el = document.getElementById('barcodeError');
+            el.textContent = msg;
+            el.classList.remove('d-none');
+            setTimeout(() => el.classList.add('d-none'), 3000);
+        }
+
+        // ── Modal de recibo ───────────────────────────────────────────────
+        const receiptModal = document.getElementById('receiptModal');
+        const receiptFrame = document.getElementById('receiptFrame');
+        let currentSaleId  = null;
+
+        function showReceiptModal(saleId) {
+            currentSaleId = saleId;
+            receiptFrame.src = `/Sales/Receipt/${saleId}?embed=true`;
+            receiptFrame.onload = function () {
+                const h = receiptFrame.contentDocument?.body?.scrollHeight;
+                if (h) receiptFrame.style.minHeight = (h + 10) + 'px';
+            };
+            bootstrap.Modal.getOrCreateInstance(receiptModal).show();
+        }
+
+        function printReceipt() {
+            receiptFrame.contentWindow?.print();
+        }
+
+        // Nueva venta — confirma, limpia carrito y cierra
+        document.getElementById('btnNewSale').addEventListener('click', function () {
+            bootstrap.Modal.getInstance(receiptModal).hide();
+            currentSaleId = null;
+            cart = [];
+            renderCart();
+            barcodeInput.focus();
+        });
+
+        // Eliminar venta — anula en BD, restaura stock, cierra pero mantiene carrito
+        document.getElementById('btnDeleteSale').addEventListener('click', async function () {
+            if (!currentSaleId) return;
+            if (!confirm('¿Anular esta venta y restaurar el stock?\nSe limpiará el carrito. Esta acción no se puede deshacer.')) return;
+
+            const btn = this;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+
+            try {
+                const r = await fetch(`/Sales/DeleteSale/${currentSaleId}`, { method: 'POST' });
+                if (r.ok) {
+                    bootstrap.Modal.getInstance(receiptModal).hide();
+                    currentSaleId = null;
+                    cart = [];
+                    renderCart();
+                    barcodeInput.focus();
+                } else {
+                    alert('Error al eliminar la venta: ' + await r.text());
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="bi bi-trash3"></i>';
+                }
+            } catch {
+                alert('Error de conexión');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-trash3"></i>';
+            }
+        });
+
+        receiptModal.addEventListener('hidden.bs.modal', () => {
+            receiptFrame.src = '';
+            receiptFrame.style.minHeight = '480px';
+        });
+
+        function escHtml(s) {
+            return String(s).replace(/[&<>"']/g, c =>
+                ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        }
+
+        // ── Carrito ───────────────────────────────────────────────────────
         function addToCart(product) {
-            const existingItem = cart.find(i => i.id === product.id);
-            if (existingItem) {
-                existingItem.quantity++;
+            const existing = cart.find(i => i.id === product.id);
+            if (existing) {
+                existing.quantity++;
             } else {
-                cart.push({
-                    id: product.id,
-                    name: product.name,
-                    price: product.price,
-                    quantity: 1
-                });
+                cart.push({ id: product.id, name: product.name, price: product.price, quantity: 1 });
             }
             renderCart();
         }
@@ -119,6 +361,11 @@
         function removeFromCart(id) {
             cart = cart.filter(i => i.id !== id);
             renderCart();
+        }
+
+        function updateQuantity(id, qty) {
+            const item = cart.find(i => i.id === id);
+            if (item) { item.quantity = parseInt(qty); renderCart(); }
         }
 
         function renderCart() {
@@ -135,69 +382,85 @@
                 cart.forEach(item => {
                     const subtotal = item.price * item.quantity;
                     total += subtotal;
-                    
-                    const row = `
+                    salesTableBody.insertAdjacentHTML('beforeend', `
                         <tr>
-                            <td>
-                                <div class="fw-bold">${item.name}</div>
-                            </td>
+                            <td><div class="fw-bold">${escHtml(item.name)}</div></td>
                             <td class="text-center">
-                                <input type="number" class="form-control form-control-sm text-center" 
-                                    value="${item.quantity}" min="1" onchange="updateQuantity(${item.id}, this.value)">
+                                <input type="number" class="form-control form-control-sm text-center"
+                                    value="${item.quantity}" min="1"
+                                    onchange="updateQuantity(${item.id}, this.value)">
                             </td>
                             <td class="text-end">Q ${item.price.toFixed(2)}</td>
                             <td class="text-end fw-bold">Q ${subtotal.toFixed(2)}</td>
                             <td class="text-end">
-                                <button class="btn btn-sm btn-outline-danger border-0" onclick="removeFromCart(${item.id})">
+                                <button class="btn btn-sm btn-outline-danger border-0"
+                                    onclick="removeFromCart(${item.id})">
                                     <i class="bi bi-x-lg"></i>
                                 </button>
                             </td>
-                        </tr>
-                    `;
-                    salesTableBody.insertAdjacentHTML('beforeend', row);
+                        </tr>`);
                 });
             }
 
             document.getElementById('summarySubtotal').innerText = `Q ${total.toFixed(2)}`;
-            document.getElementById('summaryTotal').innerText = `Q ${total.toFixed(2)}`;
+            document.getElementById('summaryTotal').innerText    = `Q ${total.toFixed(2)}`;
         }
 
-        function updateQuantity(id, qty) {
-            const item = cart.find(i => i.id === id);
-            if (item) {
-                item.quantity = parseInt(qty);
-                renderCart();
-            }
-        }
+        // ── C/F rápido ────────────────────────────────────────────────────
+        document.getElementById('btnCF').addEventListener('click', function () {
+            document.getElementById('nitInput').value       = 'CF';
+            document.getElementById('customerName').value   = 'Consumidor Final';
+            document.getElementById('customerAddress').value = '';
+        });
 
-        btnCompleteSale.addEventListener('click', async function() {
-            const customerName = document.getElementById('customerName').value;
+        // ── Completar venta: mostrar confirmación primero ─────────────────
+        btnCompleteSale.addEventListener('click', function () {
+            const nit     = document.getElementById('nitInput').value.trim()     || 'CF';
+            const name    = document.getElementById('customerName').value.trim() || 'Consumidor Final';
+            const total   = cart.reduce((s, i) => s + i.price * i.quantity, 0);
+            const items   = cart.reduce((s, i) => s + i.quantity, 0);
+
+            document.getElementById('confirmSummary').innerHTML =
+                `<div class="d-flex justify-content-between"><span style="color:#94a3b8;">Cliente</span><span class="fw-bold">${escHtml(name)}</span></div>` +
+                `<div class="d-flex justify-content-between"><span style="color:#94a3b8;">NIT</span><span>${escHtml(nit)}</span></div>` +
+                `<div class="d-flex justify-content-between"><span style="color:#94a3b8;">Productos</span><span>${items} unidad${items !== 1 ? 'es' : ''}</span></div>` +
+                `<hr style="border-color:rgba(255,255,255,.1);margin:6px 0;">` +
+                `<div class="d-flex justify-content-between align-items-center"><span class="fw-bold">TOTAL</span><span class="fw-bold fs-5 text-primary">Q ${total.toFixed(2)}</span></div>`;
+
+            bootstrap.Modal.getOrCreateInstance(document.getElementById('confirmModal')).show();
+        });
+
+        // ── Confirmar y procesar la venta ─────────────────────────────────
+        document.getElementById('btnConfirmSale').addEventListener('click', async function () {
+            bootstrap.Modal.getInstance(document.getElementById('confirmModal')).hide();
+
             const data = {
-                CustomerName: customerName,
+                CustomerNit:     document.getElementById('nitInput').value.trim()       || 'CF',
+                CustomerName:    document.getElementById('customerName').value.trim()   || 'Consumidor Final',
+                CustomerAddress: document.getElementById('customerAddress').value.trim(),
                 Items: cart.map(i => ({ ProductId: i.id, Quantity: i.quantity, Price: i.price }))
             };
 
+            btnCompleteSale.disabled = true;
+            btnCompleteSale.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Procesando...';
+
             try {
-                const response = await fetch('/Sales/CreateSale', {
+                const r = await fetch('/Sales/CreateSale', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(data)
                 });
-
-                if (response.ok) {
-                    const result = await response.json();
-                    // Open receipt in new window for printing
-                    window.open(`/Sales/Receipt/${result.saleId}`, '_blank', 'width=400,height=600');
-                    // Reset cart
-                    cart = [];
-                    renderCart();
-                    barcodeInput.focus();
+                if (r.ok) {
+                    const result = await r.json();
+                    showReceiptModal(result.saleId);
                 } else {
-                    const error = await response.text();
-                    alert('Error: ' + error);
+                    alert('Error: ' + await r.text());
                 }
             } catch (err) {
                 alert('Error al procesar la venta');
+            } finally {
+                btnCompleteSale.disabled = false;
+                btnCompleteSale.innerHTML = '<i class="bi bi-check2-circle me-2"></i> COMPLETAR VENTA';
             }
         });
     </script>

@@ -15,6 +15,12 @@ namespace FarmaciaInventario.Models
 
         public string CustomerName { get; set; } = "Consumidor Final";
 
+        [StringLength(20)]
+        public string CustomerNit { get; set; } = "CF";
+
+        [StringLength(200)]
+        public string CustomerAddress { get; set; } = string.Empty;
+
         public ICollection<SaleDetail> SaleDetails { get; set; } = new List<SaleDetail>();
     }
 

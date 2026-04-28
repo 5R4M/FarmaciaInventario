@@ -1,0 +1,445 @@
+@model IEnumerable<FarmaciaInventario.Models.Sale>
+
+@{
+    Layout = null;
+    var total    = Model.Sum(s => s.TotalAmount);
+    var count    = Model.Count();
+    var promedio = count > 0 ? total / count : 0;
+    var units    = Model.Sum(s => s.SaleDetails.Sum(d => d.Quantity));
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reporte de Ventas — @ViewBag.DisplayDate</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            font-size: 11px;
+            color: #1a202c;
+            background: #f7f8fa;
+        }
+
+        /* ── Botones de pantalla (se ocultan al imprimir) ── */
+        .screen-bar {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            background: #1e3a5f;
+            padding: 10px 24px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,.3);
+        }
+        .screen-bar span {
+            color: rgba(255,255,255,.6);
+            font-size: 13px;
+            flex: 1;
+        }
+        .btn-pdf {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            padding: 8px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: filter .15s;
+        }
+        .btn-pdf:hover { filter: brightness(1.1); }
+        .btn-print { background: linear-gradient(135deg, #10b981, #3b82f6); color: #fff; }
+        .btn-close  { background: rgba(255,255,255,.12); color: #cbd5e1; }
+
+        /* ── Área del documento ── */
+        .page-wrap {
+            padding-top: 58px; /* espacio para el screen-bar */
+        }
+
+        .document {
+            width: 210mm;
+            min-height: 297mm;
+            margin: 24px auto;
+            background: #fff;
+            box-shadow: 0 4px 32px rgba(0,0,0,.18);
+        }
+
+        /* ── Encabezado azul ── */
+        .doc-header {
+            background: linear-gradient(135deg, #1e3a5f 0%, #1d4ed8 100%);
+            color: #fff;
+            padding: 28px 32px 22px;
+        }
+
+        .doc-header .brand-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 18px;
+        }
+
+        .brand-name {
+            font-size: 22px;
+            font-weight: 700;
+            letter-spacing: 2px;
+        }
+        .brand-name span { color: #93c5fd; }
+
+        .brand-sub {
+            font-size: 10px;
+            color: rgba(255,255,255,.6);
+            letter-spacing: .5px;
+            margin-top: 2px;
+        }
+
+        .doc-number {
+            text-align: right;
+        }
+        .doc-number .label {
+            font-size: 9px;
+            color: rgba(255,255,255,.5);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .doc-number .value {
+            font-size: 18px;
+            font-weight: 700;
+            color: #bfdbfe;
+        }
+
+        .doc-title-row {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            border-top: 1px solid rgba(255,255,255,.15);
+            padding-top: 14px;
+        }
+
+        .doc-title {
+            font-size: 16px;
+            font-weight: 700;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: #fff;
+        }
+
+        .doc-meta {
+            text-align: right;
+            font-size: 10px;
+            color: rgba(255,255,255,.7);
+            line-height: 1.8;
+        }
+        .doc-meta strong { color: #fff; }
+
+        /* ── Cuerpo ── */
+        .doc-body {
+            padding: 24px 32px;
+        }
+
+        /* ── Sección de resumen ── */
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .sum-box {
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 12px 14px;
+            background: #f8fafc;
+        }
+        .sum-box.accent {
+            background: linear-gradient(135deg, #1e3a5f, #1d4ed8);
+            border-color: transparent;
+            color: #fff;
+        }
+        .sum-label {
+            font-size: 8.5px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .8px;
+            color: #94a3b8;
+            margin-bottom: 4px;
+        }
+        .sum-box.accent .sum-label { color: rgba(255,255,255,.6); }
+        .sum-value {
+            font-size: 17px;
+            font-weight: 700;
+            color: #1e293b;
+        }
+        .sum-box.accent .sum-value { color: #fff; }
+
+        /* ── Divider ── */
+        .section-title {
+            font-size: 9px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            color: #64748b;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .section-title::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: #e2e8f0;
+        }
+
+        /* ── Tabla de ventas ── */
+        .sales-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 10.5px;
+        }
+
+        .sales-table thead tr {
+            background: #1e3a5f;
+            color: #fff;
+        }
+
+        .sales-table thead th {
+            padding: 9px 10px;
+            font-size: 8.5px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .8px;
+        }
+
+        .sales-table thead th:nth-child(5),
+        .sales-table thead th:nth-child(6) { text-align: right; }
+        .sales-table thead th:nth-child(4) { text-align: center; }
+
+        .sales-table tbody tr:nth-child(even) { background: #f8fafc; }
+        .sales-table tbody tr:hover { background: #eff6ff; }
+
+        .sales-table tbody td {
+            padding: 8px 10px;
+            border-bottom: 1px solid #f1f5f9;
+            color: #334155;
+            vertical-align: middle;
+        }
+
+        .sales-table tbody td:nth-child(4) { text-align: center; }
+        .sales-table tbody td:nth-child(5),
+        .sales-table tbody td:nth-child(6) { text-align: right; }
+
+        .ticket-num {
+            font-family: 'Courier New', monospace;
+            font-weight: 700;
+            color: #1d4ed8;
+            font-size: 10px;
+        }
+
+        .amount-cell {
+            font-weight: 700;
+            color: #047857;
+        }
+
+        .nit-cell { color: #64748b; font-size: 9.5px; }
+
+        /* ── Fila de totales ── */
+        .totals-row td {
+            background: #1e3a5f !important;
+            color: #fff !important;
+            font-weight: 700;
+            padding: 10px !important;
+            border: none !important;
+        }
+        .totals-row .amount-cell { color: #86efac !important; font-size: 12px; }
+
+        /* ── Fila vacía ── */
+        .empty-row td {
+            text-align: center;
+            padding: 40px !important;
+            color: #94a3b8;
+            font-style: italic;
+        }
+
+        /* ── Pie del documento ── */
+        .doc-footer {
+            margin-top: 28px;
+            padding-top: 16px;
+            border-top: 2px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            font-size: 9px;
+            color: #94a3b8;
+        }
+
+        .doc-footer .sign-box {
+            text-align: center;
+        }
+        .doc-footer .sign-line {
+            width: 160px;
+            border-top: 1px solid #cbd5e1;
+            margin: 24px auto 4px;
+        }
+        .doc-footer .sign-label { font-size: 8.5px; color: #64748b; }
+
+        /* ── Marca de agua (solo pantalla) ── */
+        .watermark {
+            text-align: center;
+            margin-top: 6px;
+            font-size: 9px;
+            color: #cbd5e1;
+        }
+
+        /* ── IMPRESIÓN ── */
+        @@media print {
+            body { background: #fff; }
+            .screen-bar { display: none !important; }
+            .page-wrap { padding-top: 0; }
+            .document {
+                margin: 0;
+                box-shadow: none;
+                width: 100%;
+                min-height: unset;
+            }
+            .watermark { display: none; }
+        }
+
+        @@page {
+            size: A4;
+            margin: 12mm 14mm;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Barra de acciones (solo pantalla) -->
+    <div class="screen-bar">
+        <span>Reporte de Ventas &mdash; @ViewBag.DisplayDate</span>
+        <button class="btn-pdf btn-print" onclick="window.print()">
+            &#128438; Imprimir / Guardar PDF
+        </button>
+        <button class="btn-pdf btn-close" onclick="window.close()">
+            ✕ Cerrar
+        </button>
+    </div>
+
+    <div class="page-wrap">
+        <div class="document">
+
+            <!-- ── Encabezado ── -->
+            <div class="doc-header">
+                <div class="brand-row">
+                    <div>
+                        <div class="brand-name">PHARMA<span>CORE</span></div>
+                        <div class="brand-sub">Sistema de Gestión Farmacéutica &bull; NIT: 12345678</div>
+                        <div class="brand-sub">Calle Principal #123 &bull; Tel: 2222-3333</div>
+                    </div>
+                    <div class="doc-number">
+                        <div class="label">N.º de reporte</div>
+                        <div class="value">RPT-@DateTime.Now.ToString("yyyyMMddHHmm")</div>
+                    </div>
+                </div>
+                <div class="doc-title-row">
+                    <div class="doc-title">Reporte de Ventas</div>
+                    <div class="doc-meta">
+                        <div>Período: <strong>@ViewBag.DisplayDate</strong></div>
+                        <div>Turno: <strong>@ViewBag.DisplayShift</strong></div>
+                        <div>Generado: <strong>@ViewBag.GeneratedAt</strong></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── Cuerpo ── -->
+            <div class="doc-body">
+
+                <!-- Resumen estadístico -->
+                <div class="section-title">Resumen del período</div>
+                <div class="summary-grid">
+                    <div class="sum-box accent">
+                        <div class="sum-label">Total recaudado</div>
+                        <div class="sum-value">Q @total.ToString("N2")</div>
+                    </div>
+                    <div class="sum-box">
+                        <div class="sum-label">Tickets emitidos</div>
+                        <div class="sum-value">@count</div>
+                    </div>
+                    <div class="sum-box">
+                        <div class="sum-label">Unidades vendidas</div>
+                        <div class="sum-value">@units</div>
+                    </div>
+                    <div class="sum-box">
+                        <div class="sum-label">Promedio por venta</div>
+                        <div class="sum-value">Q @promedio.ToString("N2")</div>
+                    </div>
+                </div>
+
+                <!-- Detalle de ventas -->
+                <div class="section-title">Detalle de ventas</div>
+                <table class="sales-table">
+                    <thead>
+                        <tr>
+                            <th style="width:10%;">Ticket</th>
+                            <th style="width:9%;">Hora</th>
+                            <th style="width:14%;">NIT</th>
+                            <th style="width:30%;">Cliente</th>
+                            <th style="width:8%;">Uds.</th>
+                            <th style="width:14%;">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (!Model.Any())
+                        {
+                            <tr class="empty-row">
+                                <td colspan="6">No se registraron ventas en este período</td>
+                            </tr>
+                        }
+                        else
+                        {
+                            @foreach (var sale in Model)
+                            {
+                                <tr>
+                                    <td><span class="ticket-num">#@sale.Id.ToString("D5")</span></td>
+                                    <td>@sale.SaleDate.ToString("HH:mm")</td>
+                                    <td class="nit-cell">@sale.CustomerNit</td>
+                                    <td>@sale.CustomerName</td>
+                                    <td style="text-align:center;">@sale.SaleDetails.Sum(d => d.Quantity)</td>
+                                    <td class="amount-cell">Q @sale.TotalAmount.ToString("N2")</td>
+                                </tr>
+                            }
+                            <tr class="totals-row">
+                                <td colspan="4" style="text-align:right;font-size:9px;letter-spacing:.8px;text-transform:uppercase;">
+                                    Total del período
+                                </td>
+                                <td style="text-align:center;">@units</td>
+                                <td class="amount-cell">Q @total.ToString("N2")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+
+                <!-- Pie del documento -->
+                <div class="doc-footer">
+                    <div>
+                        <div>Documento generado electrónicamente por PharmaCore</div>
+                        <div style="margin-top:3px;">@ViewBag.GeneratedAt &bull; Este reporte no requiere firma para ser válido</div>
+                    </div>
+                    <div class="sign-box">
+                        <div class="sign-line"></div>
+                        <div class="sign-label">Firma del Administrador</div>
+                    </div>
+                </div>
+
+            </div><!-- /doc-body -->
+        </div><!-- /document -->
+
+        <div class="watermark">PharmaCore &copy; @DateTime.Now.Year &mdash; Documento confidencial</div>
+    </div>
+
+</body>
+</html>
