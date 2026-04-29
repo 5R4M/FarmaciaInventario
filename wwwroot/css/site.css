@@ -186,6 +186,26 @@ body {
     color: #f8fafc;
 }
 
+/* Price display */
+.price-display {
+    font-weight: 600;
+    color: #10b981;
+}
+
+/* Home cards improvements */
+.glass-card .table {
+    margin-bottom: 0;
+}
+
+.glass-card .table td {
+    padding: 0.5rem;
+    vertical-align: middle;
+}
+
+.glass-card .table .fw-bold {
+    color: #f8fafc;
+}
+
 /* Dropdown improvements */
 .dropdown-item-text {
     color: #94a3b8 !important;

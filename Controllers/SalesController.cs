@@ -68,10 +68,10 @@ namespace FarmaciaInventario.Controllers
                 var sale = new Sale
                 {
                     SaleDate = DateTime.Now,
-                    CustomerName    = string.IsNullOrEmpty(model.CustomerName)    ? "Consumidor Final" : model.CustomerName,
-                    CustomerNit     = string.IsNullOrEmpty(model.CustomerNit)     ? "CF"               : model.CustomerNit.ToUpper(),
+                    CustomerName = string.IsNullOrEmpty(model.CustomerName) ? "Consumidor Final" : model.CustomerName,
+                    CustomerNit = string.IsNullOrEmpty(model.CustomerNit) ? "CF" : model.CustomerNit.ToUpper(),
                     CustomerAddress = model.CustomerAddress ?? string.Empty,
-                    TotalAmount     = model.Items.Sum(i => i.Quantity * i.Price)
+                    TotalAmount = model.Items.Sum(i => i.Quantity * i.Price)
                 };
 
                 _context.Sales.Add(sale);
@@ -87,18 +87,18 @@ namespace FarmaciaInventario.Controllers
 
                     _context.SaleDetails.Add(new SaleDetail
                     {
-                        SaleId    = sale.Id,
+                        SaleId = sale.Id,
                         ProductId = item.ProductId,
-                        Quantity  = item.Quantity,
+                        Quantity = item.Quantity,
                         UnitPrice = item.Price
                     });
 
                     _context.InventoryTransactions.Add(new InventoryTransaction
                     {
                         ProductId = item.ProductId,
-                        Type      = TransactionType.Out,
-                        Quantity  = item.Quantity,
-                        Remarks   = $"Venta #{sale.Id}"
+                        Type = TransactionType.Out,
+                        Quantity = item.Quantity,
+                        Remarks = $"Venta #{sale.Id}"
                     });
                 }
 
@@ -134,11 +134,6 @@ namespace FarmaciaInventario.Controllers
                         product.StockQuantity += detail.Quantity;
                 }
 
-                // Remove related inventory log entries
-                var invTx = _context.InventoryTransactions
-                    .Where(t => t.Remarks == $"Venta #{id}");
-                _context.InventoryTransactions.RemoveRange(invTx);
-
                 _context.SaleDetails.RemoveRange(sale.SaleDetails);
                 _context.Sales.Remove(sale);
 
@@ -169,13 +164,13 @@ namespace FarmaciaInventario.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Reports(string date, string shift)
         {
-            var culture    = System.Globalization.CultureInfo.InvariantCulture;
+            var culture = System.Globalization.CultureInfo.InvariantCulture;
             var targetDate = DateTime.TryParseExact(date, "yyyy-MM-dd", culture,
                              System.Globalization.DateTimeStyles.None, out var parsed)
                              ? parsed : DateTime.Today;
 
             var dayStart = targetDate.Date;
-            var dayEnd   = dayStart.AddDays(1);
+            var dayEnd = dayStart.AddDays(1);
 
             var salesQuery = _context.Sales
                 .Include(s => s.SaleDetails)
@@ -204,9 +199,9 @@ namespace FarmaciaInventario.Controllers
             }
 
             var esCulture = new System.Globalization.CultureInfo("es-ES");
-            ViewBag.Date         = targetDate.ToString("yyyy-MM-dd");
-            ViewBag.Shift        = shift ?? "";
-            ViewBag.DisplayDate  = targetDate.ToString("dd 'de' MMMM 'de' yyyy", esCulture);
+            ViewBag.Date = targetDate.ToString("yyyy-MM-dd");
+            ViewBag.Shift = shift ?? "";
+            ViewBag.DisplayDate = targetDate.ToString("dd 'de' MMMM 'de' yyyy", esCulture);
             ViewBag.DisplayShift = string.IsNullOrEmpty(shift) ? "Todos los turnos" : shift;
             return View(await salesQuery.OrderBy(s => s.SaleDate).ToListAsync());
         }
@@ -214,13 +209,13 @@ namespace FarmaciaInventario.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> ReportPdf(string date, string shift)
         {
-            var culture    = System.Globalization.CultureInfo.InvariantCulture;
+            var culture = System.Globalization.CultureInfo.InvariantCulture;
             var targetDate = DateTime.TryParseExact(date, "yyyy-MM-dd", culture,
                              System.Globalization.DateTimeStyles.None, out var parsed)
                              ? parsed : DateTime.Today;
 
             var dayStart = targetDate.Date;
-            var dayEnd   = dayStart.AddDays(1);
+            var dayEnd = dayStart.AddDays(1);
 
             var salesQuery = _context.Sales
                 .Include(s => s.SaleDetails)
@@ -232,34 +227,37 @@ namespace FarmaciaInventario.Controllers
                 switch (shift)
                 {
                     case "Mañana":
-                        salesQuery = salesQuery.Where(s => s.SaleDate >= dayStart.AddHours(6)  && s.SaleDate < dayStart.AddHours(14)); break;
+                        salesQuery = salesQuery.Where(s => s.SaleDate >= dayStart.AddHours(6) && s.SaleDate < dayStart.AddHours(14));
+                        break;
                     case "Tarde":
-                        salesQuery = salesQuery.Where(s => s.SaleDate >= dayStart.AddHours(14) && s.SaleDate < dayStart.AddHours(22)); break;
+                        salesQuery = salesQuery.Where(s => s.SaleDate >= dayStart.AddHours(14) && s.SaleDate < dayStart.AddHours(22));
+                        break;
                     case "Noche":
-                        salesQuery = salesQuery.Where(s => s.SaleDate >= dayStart.AddHours(22) || s.SaleDate < dayStart.AddHours(6));  break;
+                        salesQuery = salesQuery.Where(s => s.SaleDate >= dayStart.AddHours(22) || s.SaleDate < dayStart.AddHours(6));
+                        break;
                 }
             }
 
             var esCulture = new System.Globalization.CultureInfo("es-ES");
-            ViewBag.DisplayDate  = targetDate.ToString("dd 'de' MMMM 'de' yyyy", esCulture);
+            ViewBag.DisplayDate = targetDate.ToString("dd 'de' MMMM 'de' yyyy", esCulture);
             ViewBag.DisplayShift = string.IsNullOrEmpty(shift) ? "Todos los turnos" : shift;
-            ViewBag.GeneratedAt  = DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss");
+            ViewBag.GeneratedAt = DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss");
             return View(await salesQuery.OrderBy(s => s.SaleDate).ToListAsync());
         }
     }
 
     public class SaleViewModel
     {
-        public string CustomerName    { get; set; } = string.Empty;
-        public string CustomerNit     { get; set; } = "CF";
+        public string CustomerName { get; set; } = string.Empty;
+        public string CustomerNit { get; set; } = "CF";
         public string CustomerAddress { get; set; } = string.Empty;
         public List<SaleItemViewModel> Items { get; set; } = new();
     }
 
     public class SaleItemViewModel
     {
-        public int     ProductId { get; set; }
-        public int     Quantity  { get; set; }
-        public decimal Price     { get; set; }
+        public int ProductId { get; set; }
+        public int Quantity { get; set; }
+        public decimal Price { get; set; }
     }
 }

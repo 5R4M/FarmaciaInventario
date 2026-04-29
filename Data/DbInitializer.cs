@@ -13,12 +13,8 @@ namespace FarmaciaInventario.Data
             // Add new columns to Sales if they don't exist (EnsureCreated won't update existing schema)
             try
             {
-                context.Database.ExecuteSqlRaw(@"
-                    IF NOT EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME='Sales' AND COLUMN_NAME='CustomerNit')
-                        ALTER TABLE Sales ADD CustomerNit NVARCHAR(20) NOT NULL DEFAULT 'CF';
-                    IF NOT EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME='Sales' AND COLUMN_NAME='CustomerAddress')
-                        ALTER TABLE Sales ADD CustomerAddress NVARCHAR(200) NOT NULL DEFAULT '';
-                ");
+                // Use migrations instead of raw SQL in production
+                // This is just for initial setup
             }
             catch { }
 

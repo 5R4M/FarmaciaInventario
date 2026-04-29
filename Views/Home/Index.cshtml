@@ -78,7 +78,7 @@
                                                         <div style="font-size:.7rem;color:#64748b;">@p.SKU</div>
                                                     }
                                                 </td>
-                                                <td class="text-end small">Q@p.Price.ToString("0.00")</td>
+                                                <td class="text-end small"><span class="price-display">Q @p.Price.ToString("0.00")</span></td>
                                                 <td class="text-end">
                                                     <span class="status-badge @(p.StockQuantity > 10 ? "status-in-stock" : p.StockQuantity > 0 ? "status-low-stock" : "status-out-stock")">
                                                         @p.StockQuantity
@@ -110,7 +110,7 @@
         </div>
         <div class="col-md-10">
             <h5 class="fw-bold mb-1">Estado del Sistema</h5>
-            <p class="mb-0 small" style="color: #94a3b8;">Conectado a SQL Server Express. Base de datos actualizada y optimizada.</p>
+            <p class="mb-0 small" style="color: #94a3b8;">Conectado a SQL Server. Base de datos actualizada y optimizada.</p>
         </div>
     </div>
 </div>
