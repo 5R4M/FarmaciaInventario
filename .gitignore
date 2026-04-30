@@ -17,6 +17,9 @@ project.lock.json
 # User-specific files
 *.rsuser
 
+# ASP.NET client-side libraries (se usan CDN en su lugar)
+wwwroot/lib/
+
 # Rider
 .idea/
 
