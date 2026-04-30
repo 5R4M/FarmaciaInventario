@@ -8,7 +8,7 @@ namespace FarmaciaInventario.Data
     {
         public static async Task Initialize(ApplicationDbContext context, UserManager<IdentityUser> userManager, RoleManager<IdentityRole> roleManager)
         {
-            context.Database.EnsureCreated();
+            context.Database.Migrate();
 
             // Add new columns to Sales if they don't exist (EnsureCreated won't update existing schema)
             try

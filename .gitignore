@@ -17,9 +17,6 @@ project.lock.json
 # User-specific files
 *.rsuser
 
-# ASP.NET
-wwwroot/lib/
-
 # Rider
 .idea/
 
