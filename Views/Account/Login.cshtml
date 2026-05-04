@@ -11,65 +11,74 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Login - PharmaCore</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <style>
-        body {
-            height: 100vh;
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            background: radial-gradient(circle at top right, #1e293b, #0f172a) !important;
+        }
+        .login-wrapper {
+            min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            background: radial-gradient(circle at top right, #1e293b, #0f172a);
+            padding: 1rem;
         }
         .login-card {
             width: 100%;
-            max-width: 400px;
+            max-width: 420px;
         }
-        .bi {
-            font-family: 'bootstrap-icons' !important;
-            font-size: 1.5rem;
+        /* Desactiva el salto del hover solo en la tarjeta de login */
+        .glass-card.login-panel,
+        .glass-card.login-panel:hover {
+            transform: none !important;
         }
     </style>
 </head>
 <body>
-    <div class="login-card">
-        <div class="text-center mb-4">
-            <div class="display-4 text-primary mb-2"><i class="bi bi-capsule-pill"></i></div>
-            <h2 class="fw-bold">PHARMA<span class="text-primary">CORE</span></h2>
-            <p class="small" style="color: #94a3b8;">Gestión de Inventario y Ventas</p>
-        </div>
+    <div class="login-wrapper">
+        <div class="login-card">
+            <div class="text-center mb-4">
+                <div class="display-4 text-primary mb-2"><i class="bi bi-capsule-pill"></i></div>
+                <h2 class="fw-bold">PHARMA<span class="text-primary">CORE</span></h2>
+                <p class="small">Gestión de Inventario y Ventas</p>
+            </div>
 
-        <div class="glass-card">
-            <h4 class="fw-bold mb-4">Iniciar Sesión</h4>
-            <form asp-action="Login" method="post">
-                <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
-                
-                <div class="mb-3">
-                    <label asp-for="Email" class="form-label small fw-bold" style="color: #94a3b8;">CORREO ELECTRÓNICO</label>
-                    <div class="input-group">
-                        <span class="input-group-text bg-dark border-secondary border-opacity-25" style="color: #94a3b8;"><i class="bi bi-envelope"></i></span>
-                        <input asp-for="Email" class="form-control" placeholder="Ingresar correo" />
+            <div class="glass-card login-panel">
+                <h4 class="fw-bold mb-4">Iniciar Sesión</h4>
+                <form asp-action="Login" method="post">
+                    <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
+
+                    <div class="mb-3">
+                        <label asp-for="Email" class="form-label">CORREO ELECTRÓNICO</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                            <input asp-for="Email" class="form-control" placeholder="Ingresar correo" />
+                        </div>
                     </div>
-                </div>
 
-                <div class="mb-4">
-                    <label asp-for="Password" class="form-label small fw-bold" style="color: #94a3b8;">CONTRASEÑA</label>
-                    <div class="input-group">
-                        <span class="input-group-text bg-dark border-secondary border-opacity-25" style="color: #94a3b8;"><i class="bi bi-lock"></i></span>
-                        <input asp-for="Password" class="form-control bg-dark text-white border-secondary border-opacity-25" type="password" placeholder="••••••••" />
+                    <div class="mb-4">
+                        <label asp-for="Password" class="form-label">CONTRASEÑA</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                            <input asp-for="Password" class="form-control" type="password" placeholder="••••••••" />
+                        </div>
                     </div>
-                </div>
 
-                <div class="mb-4 form-check">
-                    <input asp-for="RememberMe" class="form-check-input bg-dark border-secondary" />
-                    <label asp-for="RememberMe" class="form-check-label small" style="color: #94a3b8;">Recordarme en este equipo</label>
-                </div>
+                    <div class="mb-4 form-check">
+                        <input asp-for="RememberMe" class="form-check-input" />
+                        <label asp-for="RememberMe" class="form-check-label small">Recordarme en este equipo</label>
+                    </div>
 
-                <button type="submit" class="btn btn-primary w-100 py-3 fw-bold shadow">
-                    ENTRAR AL SISTEMA
-                </button>
-            </form>
+                    <button type="submit" class="btn btn-primary w-100 py-3 fw-bold shadow">
+                        ENTRAR AL SISTEMA
+                    </button>
+                </form>
+            </div>
         </div>
     </div>
 </body>
